@@ -11,7 +11,6 @@ They are presented here for transparency and as examples. This is not likely som
 - **Auto Email Confirmation**: Automatically sets user emails to `$username@<AUTO_EMAIL_DOMAIN>` and skips email confirmation without sending confirmation emails
 - **Username Login**: Allows users to log in with just their username (without the domain) when `AUTO_EMAIL_DOMAIN` is configured
 - **Mailer URL Overrides**: Rewrites clearnet URLs to onion URLs in all outgoing emails for Tor hidden service support
-- **Trusted OAuth Clients**: Allows certain OAuth applications to skip the consent screen for seamless integration
 - **Custom Themes**: Domum-branded dark and light themes with custom color palettes and styling
 - **Custom Footer Component**: Adds a "Learning site" link to the footer navigation
 
@@ -33,9 +32,7 @@ This repository includes:
 │   ├── AUTO_EMAIL_CONFIRMATION.md     # Documentation for auto email confirmation
 │   ├── username_login.rb              # Username-based login feature
 │   ├── USERNAME_LOGIN.md              # Documentation for username login
-│   ├── mailer_overrides.rb            # Mailer URL rewriting for onion sites
-│   ├── trusted_oauth_clients.rb      # Trusted OAuth client feature
-│   └── TRUSTED_OAUTH_CLIENTS.md      # Documentation for trusted OAuth clients
+│   └── mailer_overrides.rb            # Mailer URL rewriting for onion sites
 ├── theming/               # Custom themes and styling
 │   ├── styles/            # SCSS theme files
 │   ├── locales/           # Theme name localizations
@@ -83,16 +80,6 @@ Ensures all outgoing emails use onion URLs instead of clearnet URLs by rewriting
 
 **Documentation:** See inline comments in the file
 
-#### Trusted OAuth Clients (`trusted_oauth_clients.rb`)
-Allows certain OAuth applications to be marked as "trusted", meaning users do not need to provide consent when authorizing these applications.
-
-This was originally implemented along with an parallel private email system.
-
-**Environment Variables:**
-- `TRUSTED_OAUTH_CLIENT_IDS` - Comma-separated list of OAuth client UIDs
-
-**Documentation:** See [initializers/TRUSTED_OAUTH_CLIENTS.md](initializers/TRUSTED_OAUTH_CLIENTS.md)
-
 ### Theming
 
 The `theming/` directory contains custom themes for [Domum Social](https://domum.social)
@@ -128,7 +115,6 @@ The `components/` directory contains React/TypeScript component overrides:
 | `AUTO_EMAIL_DOMAIN` | Email domain for auto-generated emails | `mail.lan` |
 | `WEB_DOMAIN` | Clearnet domain for mailer URL rewriting | None |
 | `ONION_URL` | Onion URL for mailer URL rewriting | None |
-| `TRUSTED_OAUTH_CLIENT_IDS` | Comma-separated OAuth client UIDs | None |
 
 
 
