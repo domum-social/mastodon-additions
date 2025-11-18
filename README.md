@@ -64,7 +64,7 @@ Automatically sets user emails to `$username@<AUTO_EMAIL_DOMAIN>` and skips emai
 - `AUTO_EMAIL_CONFIRMATION` - Set to `true` to enable this feature
 - `AUTO_EMAIL_DOMAIN` - Email domain to use (defaults to `mail.lan` if not set - **SITE SPECIFIC**)
 
-**Documentation:** See `initializers/AUTO_EMAIL_CONFIRMATION.md`
+**Documentation:** See [initializers/AUTO_EMAIL_CONFIRMATION.md](initializers/AUTO_EMAIL_CONFIRMATION.md)
 
 #### Username Login (`username_login.rb`)
 Modifies the login page to accept a "username" field instead of "email" when `AUTO_EMAIL_DOMAIN` is configured.
@@ -72,7 +72,7 @@ Modifies the login page to accept a "username" field instead of "email" when `AU
 **Environment Variables:**
 - `AUTO_EMAIL_DOMAIN` - Email domain for username transformation (defaults to `mail.lan` if not set - **SITE SPECIFIC**)
 
-**Documentation:** See `initializers/USERNAME_LOGIN.md`
+**Documentation:** See [initializers/USERNAME_LOGIN.md](initializers/USERNAME_LOGIN.md)
 
 #### Mailer Overrides (`mailer_overrides.rb`)
 Ensures all outgoing emails use onion URLs instead of clearnet URLs by rewriting URLs in email content.
@@ -89,13 +89,13 @@ Allows certain OAuth applications to be marked as "trusted", meaning users do no
 **Environment Variables:**
 - `TRUSTED_OAUTH_CLIENT_IDS` - Comma-separated list of OAuth client UIDs
 
-**Documentation:** See `initializers/TRUSTED_OAUTH_CLIENTS.md`
+**Documentation:** See [initializers/TRUSTED_OAUTH_CLIENTS.md](initializers/TRUSTED_OAUTH_CLIENTS.md)
 
 ### Theming
 
 The `theming/` directory contains custom themes for [Domum Social](https://domum.social)
 
-**Documentation:** See `theming/README.md`
+**Documentation:** See [theming/README.md](theming/README.md)
 
 ### View Overrides
 
