@@ -1,0 +1,10 @@
+# Complete themes configuration for Mastodon
+# Includes default Mastodon themes plus custom Domum theme
+# This file is mounted to the container and persists across rebuilds
+
+default: styles/application.scss
+contrast: styles/contrast.scss
+mastodon-light: styles/mastodon-light.scss
+domum-dark: styles/domum-dark.scss
+domum-light: styles/domum-light.scss
+

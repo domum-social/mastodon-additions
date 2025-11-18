@@ -1,0 +1,112 @@
+# Custom Mastodon Dockerfile with theming support and development gems
+# DIFFERENCE FROM PRODUCTION: Includes development gems in comment header
+# Use the upstream build stage for asset compilation
+FROM ghcr.io/mastodon/mastodon:v4.5.1 AS build
+
+# Switch to root to place theme files
+USER root
+
+# Create theming directories
+RUN mkdir -p /mastodon/app/javascript/styles \
+    && mkdir -p /mastodon/config/locales/custom
+
+# Copy theme files directly - place in main styles directory like default themes
+COPY theming/styles/ /mastodon/app/javascript/styles/
+COPY theming/themes.yml /mastodon/config/themes.yml
+
+# Copy custom locale overrides
+COPY theming/locales/ /mastodon/config/locales/custom/
+
+# Copy component overrides (strip the components/app/javascript prefix)
+COPY components/app/javascript/ /mastodon/app/javascript/
+
+# Install Node.js and enable Corepack for Yarn
+RUN apt-get update && apt-get install -y \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && corepack enable
+
+# Install Node.js dependencies
+RUN yarn install --frozen-lockfile
+
+# DEV ONLY: Skip asset precompilation in build stage
+# NOT IN PRODUCTION: Production Dockerfile precompiles assets here
+# In development, Vite builds assets on-demand at runtime, so we don't need
+# to precompile them during image build. This speeds up the build process
+# and avoids Redis connection errors during build.
+
+# Final stage - copy node_modules and install development gems
+FROM ghcr.io/mastodon/mastodon:v4.5.1
+
+# DEV ONLY: Copy node_modules for Vite to use in development mode
+# NOT IN PRODUCTION: Production doesn't need node_modules at runtime
+# Note: We skip copying precompiled assets since Vite builds on-demand in development
+# Using --chown to set ownership during copy (much faster than recursive chown)
+COPY --from=build --chown=mastodon:mastodon /mastodon/node_modules /mastodon/node_modules
+
+# Switch to root to copy theme files and install development gems
+USER root
+
+# DEV ONLY: Install build tools needed for native gem extensions
+# NOT IN PRODUCTION: Required to compile native extensions for gems like debug_inspector,
+# debug, prism, ruby-prof, stackprof, etc.
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# DEV ONLY: Install Node.js and Yarn for Vite asset compilation in development
+# NOT IN PRODUCTION: Production uses precompiled assets from build stage
+# In development mode, Vite builds assets on-the-fly and needs Node.js/Yarn available
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && corepack enable \
+    && rm -rf /var/lib/apt/lists/*
+
+# DEV ONLY: Fix ownership of .yarn directory and create packs-dev directory
+# NOT IN PRODUCTION: These are not needed in production
+RUN chown -R mastodon:mastodon /opt/mastodon/.yarn || true \
+    && mkdir -p /opt/mastodon/public/packs-dev \
+    && chown -R mastodon:mastodon /opt/mastodon/public/packs-dev \
+    && chown -R mastodon:mastodon /opt/mastodon/public/packs || true
+
+# DEV ONLY: Install development gems (including letter_opener_web) as root
+# NOT IN PRODUCTION: Production Dockerfile does not install dev/test gems
+# The base image has bundle config set to exclude development/test gems
+# We need to override this to install development gems
+# WORKDIR is already set to /opt/mastodon in the base image
+RUN bundle config set --local without '' && \
+    bundle config set --local with 'development' && \
+    bundle install
+
+# From here down, identical to production Dockerfile
+# Copy theme files directly
+COPY theming/styles/ /mastodon/app/javascript/styles/
+COPY theming/themes.yml /mastodon/config/themes.yml
+
+# Copy custom locale overrides
+COPY theming/locales/ /mastodon/config/locales/custom/
+
+# Copy view overrides
+COPY views/ /mastodon/app/views/
+
+# Copy component overrides (strip the components/app/javascript prefix)
+COPY components/app/javascript/ /mastodon/app/javascript/
+
+# DEV ONLY: Fix ownership of JavaScript assets directory
+# NOT IN PRODUCTION: Production doesn't need this as assets are precompiled
+RUN chown -R mastodon:mastodon /opt/mastodon/app/javascript || true
+
+# DEV ONLY: Fix ownership of db directory for schema.rb writes
+# NOT IN PRODUCTION: Production doesn't need this as schema is pre-generated
+RUN mkdir -p /opt/mastodon/db \
+    && chown -R mastodon:mastodon /opt/mastodon/db || true
+
+# Switch back to mastodon user
+USER 991
+
+# Preserve the original entrypoint from the base image
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+

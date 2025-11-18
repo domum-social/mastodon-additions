@@ -1,0 +1,52 @@
+@use 'sass:color';
+@use '../mastodon/variables' as *;
+@use '../mastodon/functions' as *;
+@use '../domum-social/domum-variables' as domum;
+
+:root {
+  --dropdown-border-color: #{lighten(domum.$domum-border-gray, 4%)};
+  --dropdown-background-color: #{rgba(darken(domum.$domum-neutral-light, 8%), 0.9)};
+  --dropdown-shadow: 0 20px 25px -5px #{rgba($base-shadow-color, 0.25)},
+    0 8px 10px -6px #{rgba($base-shadow-color, 0.25)};
+  --modal-background-color: #{rgba(darken(domum.$domum-neutral-light, 8%), 0.7)};
+  --modal-background-variant-color: #{rgba(domum.$domum-neutral-light, 0.7)};
+  --modal-border-color: #{lighten(domum.$domum-border-gray, 4%)};
+  --background-border-color: #{lighten(domum.$domum-border-gray, 4%)};
+  --background-color: #{darken(domum.$domum-neutral-light, 8%)};
+  --background-color-tint: #{rgba(darken(domum.$domum-neutral-light, 8%), 0.9)};
+  --surface-background-color: #{darken(domum.$domum-neutral-light, 4%)};
+  --surface-variant-background-color: #{domum.$domum-neutral-light};
+  --surface-variant-active-background-color: #{lighten(domum.$domum-neutral-light, 4%)};
+  --on-surface-color: #{domum.$domum-off-black};
+  --avatar-border-radius: 8px;
+  --media-outline-color: #{rgba(domum.$domum-glow-gold, 0.15)};
+  --overlay-icon-shadow: drop-shadow(0 0 8px #{rgba($base-shadow-color, 0.35)});
+          --error-background-color: #d94d4d;
+        --error-active-background-color: #e55858;
+  --on-error-color: #fff;
+  --rich-text-container-color: rgba(125, 107, 255, 100%);
+  --rich-text-text-color: rgba(17, 20, 24, 100%);
+  --rich-text-decorations-color: rgba(160, 166, 179, 100%);
+  --nested-card-background: color(from #{domum.$domum-glow-gold} srgb r g b / 5%);
+  --nested-card-text: #{domum.$domum-off-black};
+  --nested-card-border: 1px solid
+    color(from #{domum.$domum-glow-gold} srgb r g b / 15%);
+  --input-placeholder-color: #{domum.$domum-soft-gray};
+  --input-background-color: var(--surface-variant-background-color);
+  --on-input-color: #{domum.$domum-off-black};
+  
+  // Text color variables for status content
+  --primary-text-color: #{domum.$domum-off-black};
+  --secondary-text-color: #{domum.$domum-soft-gray};
+  --highlight-text-color: #{domum.$domum-violet};
+  --dark-text-color: #{domum.$domum-off-black};
+}
+
+body {
+  // Variable for easily inverting directional UI elements,
+  --text-x-direction: 1;
+
+  &.rtl {
+    --text-x-direction: -1;
+  }
+}

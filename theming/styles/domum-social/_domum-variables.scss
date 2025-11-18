@@ -1,0 +1,26 @@
+// ==============================
+// 🎨 Domum.social Brand Palette
+// ==============================
+
+$domum-dark-charcoal:   #1C1F26;
+$domum-off-black:       #111418;
+$domum-glow-gold:       #FFD86B;
+$domum-violet:          #7D6BFF;
+$domum-teal:            #34D1BF;
+$domum-error:           #FF6B6B;
+$domum-success:         $domum-teal;
+$domum-warning:         $domum-glow-gold;
+
+$domum-almost-white:    #F9FAFB;
+$domum-soft-gray:       #A0A6B3;
+$domum-neutral-light:   #F3F4F6;
+$domum-border-gray:     #D1D5DB;
+$domum-border-dark:     #2A2E38;
+
+@function domum-darken($color, $amount) {
+  @return darken($color, $amount);
+}
+
+@function domum-lighten($color, $amount) {
+  @return lighten($color, $amount);
+}

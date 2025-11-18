@@ -1,0 +1,20 @@
+@import 'application'; // Mastodon base styles
+@import "domum-social/domum-variables";
+@import "domum-light/css_variables";
+
+$ui-base-color:        $domum-neutral-light;
+$ui-secondary-color:   $domum-almost-white;
+$ui-highlight-color:   $domum-glow-gold;
+$ui-primary-color:     $domum-violet;
+$ui-link-color:        $ui-primary-color;
+$ui-button-color:      $domum-teal;
+
+$primary-text-color:   $domum-off-black;
+$secondary-text-color: $domum-soft-gray;
+$highlight-text-color: $domum-violet;
+
+$border-color:         $domum-border-gray;
+
+$error-color:   $domum-error;
+$success-color:$domum-success;
+$warning-color:$domum-warning;
