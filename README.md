@@ -86,6 +86,8 @@ Ensures all outgoing emails use onion URLs instead of clearnet URLs by rewriting
 #### Trusted OAuth Clients (`trusted_oauth_clients.rb`)
 Allows certain OAuth applications to be marked as "trusted", meaning users do not need to provide consent when authorizing these applications.
 
+This was originally implemented along with an parallel private email system.
+
 **Environment Variables:**
 - `TRUSTED_OAUTH_CLIENT_IDS` - Comma-separated list of OAuth client UIDs
 
