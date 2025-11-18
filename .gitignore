@@ -1,0 +1,29 @@
+# Backup files
+*.scss~
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.deleteme
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+
+# Node modules (if any are added)
+node_modules/
+
+# Build artifacts
+*.gem
+*.rbc
+
