@@ -100,6 +100,8 @@ These views are conditionally modified based on environment variables (e.g., `AU
 The `components/` directory contains React/TypeScript component overrides:
 - `link_footer.tsx` - Custom footer component with additional links
 
+**NOTE** this relies on our front end handling content for `/learn` outside mastodon in our case https://github.com/domum-social/docs 
+
 ### Dockerfiles
 
 - `Dockerfile` - Production Dockerfile with asset precompilation
