@@ -19,6 +19,9 @@ COPY theming/locales/ /mastodon/config/locales/custom/
 # Copy component overrides (strip the components/app/javascript prefix)
 COPY components/app/javascript/ /mastodon/app/javascript/
 
+# Copy validator overrides
+COPY components/app/validators/ /mastodon/app/validators/
+
 # Install Node.js and enable Corepack for Yarn
 RUN apt-get update && apt-get install -y \
     curl \
@@ -57,6 +60,9 @@ COPY theming/locales/ /mastodon/config/locales/custom/
 
 # Copy view overrides
 COPY views/ /mastodon/app/views/
+
+# Copy validator overrides
+COPY components/app/validators/ /mastodon/app/validators/
 
 # Fix ownership of db directory for schema.rb writes (needed for migrations)
 RUN mkdir -p /opt/mastodon/db \
