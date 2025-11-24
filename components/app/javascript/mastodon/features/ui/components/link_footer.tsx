@@ -4,6 +4,8 @@
  * DIFFERENCES FROM DISTRIBUTION VERSION:
  * - Added "Learning site" link as the first link after the domain name
  * - The Learning site link points to /learn and appears before "About"
+ * - Added "Funding" link after the terms-of-service link
+ * - The Funding link points to /learn/about/funding
  * 
  * Based on: mastodon/app/javascript/mastodon/features/ui/components/link_footer.tsx
  */
@@ -84,6 +86,12 @@ export const LinkFooter: React.FC<{
             </Link>
           </>
         )}
+        <DividingCircle />
+        {/* CUSTOM: Added "Funding" link - not present in distribution version */}
+        {/* Use <a> instead of <Link> since /learn/about/funding is handled by nginx, not React Router */}
+        <a href='/learn/about/funding' target={multiColumn ? '_blank' : undefined}>
+          <FormattedMessage id='footer.funding' defaultMessage='Funding' />
+        </a>
       </p>
 
       <p>

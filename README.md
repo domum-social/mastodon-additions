@@ -12,7 +12,7 @@ They are presented here for transparency and as examples. This is not likely som
 - **Username Login**: Allows users to log in with just their username (without the domain) when `AUTO_EMAIL_DOMAIN` is configured
 - **Mailer URL Overrides**: Rewrites clearnet URLs to onion URLs in all outgoing emails for Tor hidden service support
 - **Custom Themes**: Domum-branded dark and light themes with custom color palettes and styling
-- **Custom Footer Component**: Adds a "Learning site" link to the footer navigation
+- **Custom Footer Component**: Adds "Learning site" and "Funding" links to the footer navigation
 
 ### Repository Contents
 
@@ -98,9 +98,9 @@ These views are conditionally modified based on environment variables (e.g., `AU
 ### Component Overrides
 
 The `components/` directory contains React/TypeScript component overrides:
-- `link_footer.tsx` - Custom footer component with additional links
+- `link_footer.tsx` - Custom footer component with additional links (Learning site and Funding)
 
-**NOTE** this relies on our front end handling content for `/learn` outside mastodon in our case https://github.com/domum-social/docs 
+**NOTE** this relies on our front end handling content for `/learn` and `/learn/about/funding` outside mastodon in our case https://github.com/domum-social/docs 
 
 ### Dockerfiles
 
