@@ -1,7 +1,7 @@
 # Custom Mastodon Dockerfile with theming support and development gems
 # DIFFERENCE FROM PRODUCTION: Includes development gems in comment header
 # Use the upstream build stage for asset compilation
-FROM ghcr.io/mastodon/mastodon:v4.5.1 AS build
+FROM ghcr.io/mastodon/mastodon:v4.5.2 AS build
 
 # Switch to root to place theme files
 USER root
@@ -37,7 +37,7 @@ RUN yarn install --frozen-lockfile
 # and avoids Redis connection errors during build.
 
 # Final stage - copy node_modules and install development gems
-FROM ghcr.io/mastodon/mastodon:v4.5.1
+FROM ghcr.io/mastodon/mastodon:v4.5.2
 
 # DEV ONLY: Copy node_modules for Vite to use in development mode
 # NOT IN PRODUCTION: Production doesn't need node_modules at runtime
