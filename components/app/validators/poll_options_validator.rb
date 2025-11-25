@@ -19,3 +19,4 @@ class PollOptionsValidator < ActiveModel::Validator
   end
 end
 
+
