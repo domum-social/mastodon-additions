@@ -4,7 +4,7 @@ This feature automatically sets user emails to `$username@<AUTO_EMAIL_DOMAIN>` (
 
 **Note:** If `AUTO_EMAIL_DOMAIN` is not set, the code defaults to `mail.lan` which is site-specific and should be configured via environment variable.
 
-At [Domum Social](https://domum.socail) we use this to avoid collecting user emails for privacy purposes and use a mail server configured to discard our `AUTO_EMAIL_DOMAIN` and actually deliver to a specifically listed set our admin user emails so they can get relevant systems notifications.
+At [Domum Social](https://domum.social) we use this to avoid collecting user emails for privacy purposes and use a mail server configured to discard our `AUTO_EMAIL_DOMAIN` and actually deliver to a specifically listed set our admin user emails so they can get relevant systems notifications.
 
 ## How It Works
 
