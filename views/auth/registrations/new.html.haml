@@ -34,6 +34,11 @@
     - else
       -# SITE SPECIFIC: Default fallback to 'mail.lan' if AUTO_EMAIL_DOMAIN not set
       = hidden_field_tag 'user[email]', "#{resource.account&.username || 'user'}@#{ENV['AUTO_EMAIL_DOMAIN'] || 'mail.lan'}"
+    -# This should be localized! But that digs further into Mastodon internals than we should go without a user base.
+    %p.lead
+      WARNING: since we don't have your email address you cannot recover your password. If it is lost it is lost forever along with all access to your account. Please read our
+      %a{href: '/learn/anonymity/passwords/', target: '_blank'} Password Documentation
+      to learn about balancing password security with your privacy needs.
     = f.input :password,
               hint: false,
               input_html: { autocomplete: 'new-password', minlength: User.password_length.first, maxlength: User.password_length.last, placeholder: ' ' },
