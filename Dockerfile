@@ -1,6 +1,6 @@
 # Custom Mastodon Dockerfile with theming support
 # Use the upstream build stage for asset compilation
-FROM ghcr.io/mastodon/mastodon:v4.5.8 AS build
+FROM ghcr.io/mastodon/mastodon:v4.5.9 AS build
 
 # Switch to root to place theme files
 USER root
@@ -41,7 +41,7 @@ RUN SECRET_KEY_BASE_DUMMY=1 \
 RUN cp -r /mastodon/public/packs/assets/* /mastodon/public/assets/ 2>/dev/null || true
 
 # Final stage - copy compiled assets
-FROM ghcr.io/mastodon/mastodon:v4.5.8
+FROM ghcr.io/mastodon/mastodon:v4.5.9
 
 # Copy compiled assets from build stage
 COPY --from=build /mastodon/public/assets /mastodon/public/assets
