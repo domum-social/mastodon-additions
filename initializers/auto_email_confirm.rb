@@ -21,7 +21,17 @@ Rails.application.config.after_initialize do
   if auto_email_enabled
     Rails.logger.info "Auto email confirmation enabled"
     
-    # Override Auth::RegistrationsController to modify email during user creation
+    # Override Auth::RegistrationsController to modify email during user creation.
+    #
+    # Guarded: after_initialize re-runs on every code reload under
+    # RAILS_ENV=development. Re-aliasing points original_* at the override and
+    # each signup then recurses until SystemStackError.
+    if Auth::RegistrationsController.private_method_defined?(:original_build_resource) ||
+       Auth::RegistrationsController.method_defined?(:original_build_resource)
+      Rails.logger.debug 'Auto email confirm overrides already installed, skipping re-alias'
+      next
+    end
+
     Auth::RegistrationsController.class_eval do
       # Override build_resource to set email from username
       alias_method :original_build_resource, :build_resource
