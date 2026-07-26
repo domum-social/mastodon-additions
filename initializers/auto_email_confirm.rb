@@ -25,7 +25,7 @@ Rails.application.config.after_initialize do
     Auth::RegistrationsController.class_eval do
       # Override build_resource to set email from username
       alias_method :original_build_resource, :build_resource
-      
+
       def build_resource(hash = nil)
         # SITE SPECIFIC: Default fallback to 'mail.lan' if AUTO_EMAIL_DOMAIN not set
         Rails.logger.info "build_resource called with email domain: #{ENV['AUTO_EMAIL_DOMAIN'] || 'mail.lan'}"
@@ -102,40 +102,35 @@ Rails.application.config.after_initialize do
       
     end
     
-    # Prevent Devise from sending confirmation emails
-    # by overriding the notification sending
-    User.class_eval do
-      def send_confirmation_notifications
-        Rails.logger.info "send_confirmation_notifications called - skipping (auto-email-confirmation enabled)"
-        # Do nothing - don't send confirmation email
-      end
-    end
-    
-    # Also override the devise confirmable module's send_confirmation_instructions
+    # Override Devise::Models::Confirmable#send_confirmation_instructions to
+    # mark the token as issued without ever generating an email.
+    #
+    # (There is deliberately no send_confirmation_notifications override here:
+    # no such method exists in Mastodon 4.5 or 4.6 -- the one that used to be
+    # defined here was dead code.)
     User.class_eval do
       def send_confirmation_instructions
-        Rails.logger.info "send_confirmation_instructions called - skipping (auto-email-confirmation enabled)"
-        # Do nothing - don't send confirmation email
+        Rails.logger.debug 'send_confirmation_instructions called - skipping (auto-email-confirmation enabled)'
         self.confirmation_token = Devise.friendly_token
         self.confirmation_sent_at = Time.now.utc
         save(validate: false) if persisted?
       end
     end
-    
+
     # Prevent sending of confirmation emails by clearing pending notifications
     User.class_eval do
       alias_method :original_send_pending_devise_notifications, :send_pending_devise_notifications
-      
+
       def send_pending_devise_notifications
         # Don't send any confirmation-related emails
-        pending_devise_notifications.delete_if { |notification, *, **| 
+        pending_devise_notifications.delete_if do |notification, *, **|
           [:confirmation_instructions, :reconfirmation_instructions].include?(notification)
-        }
-        
+        end
+
         original_send_pending_devise_notifications
       end
     end
-    
+
     Rails.logger.info "=== Auto email confirmation overrides loaded ==="
   else
     Rails.logger.info "Auto email confirmation disabled - set AUTO_EMAIL_CONFIRMATION=true to enable"
