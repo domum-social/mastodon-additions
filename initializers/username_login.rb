@@ -20,32 +20,33 @@ Rails.application.config.after_initialize do
       class << self
         # Override find_for_authentication to transform username to email
         alias_method :original_find_for_authentication, :find_for_authentication
-        
+
         def find_for_authentication(conditions = nil)
           # Transform email if needed
           if conditions.is_a?(Hash) && conditions[:email].present? && !conditions[:email].include?('@')
             # SITE SPECIFIC: Default fallback to 'mail.lan' if AUTO_EMAIL_DOMAIN not set
             email_domain = ENV['AUTO_EMAIL_DOMAIN'] || 'mail.lan'
-            transformed_email = "#{conditions[:email]}@#{email_domain}"
-            
+            username = conditions[:email]
+            transformed_email = "#{username}@#{email_domain}"
+
             # Log transformation only in debug mode
-            Rails.logger.debug "Username login: '#{conditions[:email]}' -> '#{transformed_email}'"
-            
-            # Call original with transformed email
+            Rails.logger.debug { "Username login: '#{username}' -> '#{transformed_email}'" }
+
+            # Call original with transformed email, then put the caller's
+            # hash back the way we found it
             conditions[:email] = transformed_email
-            result = original_find_for_authentication(conditions)
-            
-            # Restore original email
-            conditions[:email] = conditions[:email].sub("@#{email_domain}", '')
-            
-            result
+            begin
+              original_find_for_authentication(conditions)
+            ensure
+              conditions[:email] = username
+            end
           else
             original_find_for_authentication(conditions)
           end
         end
       end
     end
-    
+
     # Override I18n translations for error messages to use "username" instead of "email"
     if defined?(I18n)
       I18n.backend.store_translations(:en, devise: {
