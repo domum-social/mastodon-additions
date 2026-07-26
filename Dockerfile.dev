@@ -24,12 +24,12 @@ COPY components/app/validators/ /mastodon/app/validators/
 # Install Node.js and enable Corepack for Yarn
 RUN apt-get update && apt-get install -y \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && corepack enable
 
 # Install Node.js dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 # DEV ONLY: Skip asset precompilation in build stage
 # NOT IN PRODUCTION: Production Dockerfile precompiles assets here
@@ -60,7 +60,7 @@ RUN apt-get update && apt-get install -y \
 # DEV ONLY: Install Node.js and Yarn for Vite asset compilation in development
 # NOT IN PRODUCTION: Production uses precompiled assets from build stage
 # In development mode, Vite builds assets on-the-fly and needs Node.js/Yarn available
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && corepack enable \
     && rm -rf /var/lib/apt/lists/*

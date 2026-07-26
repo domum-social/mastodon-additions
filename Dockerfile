@@ -28,12 +28,12 @@ COPY components/app/validators/ /mastodon/app/validators/
 # Install Node.js and enable Corepack for Yarn
 RUN apt-get update && apt-get install -y \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && corepack enable
 
 # Install Node.js dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 # Compile assets including custom themes (skip environment loading)
 RUN SECRET_KEY_BASE_DUMMY=1 \
