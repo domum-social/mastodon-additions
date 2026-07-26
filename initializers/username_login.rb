@@ -56,14 +56,22 @@ Rails.application.config.after_initialize do
       end
     end
 
-    # Override I18n translations for error messages to use "username" instead of "email"
-    if defined?(I18n)
-      I18n.backend.store_translations(:en, devise: {
-        failure: {
-          invalid: "Invalid username or password.",
-          not_found_in_database: "Invalid username or password."
-        }
-      }, override: true)
+    # Make config/locales/custom/*.yml win over the stock locale files.
+    #
+    # Rails globs config/locales/**/*.yml into I18n.load_path, and later files
+    # override earlier ones -- but the glob puts custom/en.yml *before*
+    # devise.en.yml, so our drop-in silently loses. Moving it to the end of
+    # the load path and reloading is what actually makes it an override.
+    #
+    # (I18n.backend.store_translations here would not work either: the backend
+    # loads lazily on the first lookup, which happens after this initializer,
+    # and that load overwrites anything stored beforehand.)
+    custom_locales = Dir[Rails.root.join('config', 'locales', 'custom', '*.yml')].sort
+    if custom_locales.any?
+      I18n.load_path -= custom_locales
+      I18n.load_path += custom_locales
+      I18n.reload!
+      Rails.logger.info "Custom locale overrides moved to end of I18n.load_path: #{custom_locales.inspect}"
     end
   end
 end
