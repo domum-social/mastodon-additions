@@ -1,17 +1,20 @@
-# Custom Mastodon Dockerfile with theming support
+# Custom Mastodon image: Domum overrides layered on the upstream release.
+#
+# Overlays: view overrides, validator overrides, JS/TSX component overrides,
+# and a custom locale drop-in. Custom SCSS themes were removed for 4.6 --
+# see theming/README.md.
+#
+# Node is installed from NodeSource because the published mastodon image has
+# no node or yarn (upstream only copies them into its precompiler stage).
+# Keep the major in step with upstream's .nvmrc.
+#
 # Use the upstream build stage for asset compilation
 FROM ghcr.io/mastodon/mastodon:v4.6.3 AS build
 
-# Switch to root to place theme files
+# Switch to root to place override files
 USER root
 
-# Create theming directories
-RUN mkdir -p /mastodon/app/javascript/styles \
-    && mkdir -p /mastodon/config/locales/custom
-
-# Copy theme files directly - place in main styles directory like default themes
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
+RUN mkdir -p /mastodon/config/locales/custom
 
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
@@ -47,14 +50,10 @@ FROM ghcr.io/mastodon/mastodon:v4.6.3
 COPY --from=build /mastodon/public/assets /mastodon/public/assets
 COPY --from=build /mastodon/public/packs /mastodon/public/packs
 
-# Switch to root to copy theme files
+# Switch to root to copy override files
 USER root
 
 # Copy theme files directly
-# Copy theme files directly - place in main styles directory like default themes
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
-
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
 

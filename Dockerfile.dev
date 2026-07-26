@@ -1,18 +1,16 @@
-# Custom Mastodon Dockerfile with theming support and development gems
-# DIFFERENCE FROM PRODUCTION: Includes development gems in comment header
+# Custom Mastodon dev image: same overlays as the production Dockerfile,
+# plus the development gem group, and no asset precompile (Vite builds on
+# demand at runtime).
+#
+# See the production Dockerfile for notes on the overlay set and NodeSource.
+#
 # Use the upstream build stage for asset compilation
 FROM ghcr.io/mastodon/mastodon:v4.6.3 AS build
 
-# Switch to root to place theme files
+# Switch to root to place override files
 USER root
 
-# Create theming directories
-RUN mkdir -p /mastodon/app/javascript/styles \
-    && mkdir -p /mastodon/config/locales/custom
-
-# Copy theme files directly - place in main styles directory like default themes
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
+RUN mkdir -p /mastodon/config/locales/custom
 
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
@@ -48,7 +46,7 @@ FROM ghcr.io/mastodon/mastodon:v4.6.3
 # Using --chown to set ownership during copy (much faster than recursive chown)
 COPY --from=build --chown=mastodon:mastodon /mastodon/node_modules /mastodon/node_modules
 
-# Switch to root to copy theme files and install development gems
+# Switch to root to copy override files and install development gems
 USER root
 
 # DEV ONLY: Install build tools needed for native gem extensions
@@ -84,10 +82,6 @@ RUN bundle config set --local without '' && \
     bundle install
 
 # From here down, identical to production Dockerfile
-# Copy theme files directly
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
-
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
 
