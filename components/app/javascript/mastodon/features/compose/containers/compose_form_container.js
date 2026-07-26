@@ -1,10 +1,15 @@
 /**
  * Custom override of Mastodon's ComposeFormContainer component
- * 
+ *
  * DIFFERENCES FROM DISTRIBUTION VERSION:
- * - Changed maxChars default value from 500 to 1000 characters
- * 
- * Based on: mastodon/app/javascript/mastodon/features/compose/containers/compose_form_container.js
+ * - Changed maxChars fallback from 500 to 1000 characters
+ *
+ * The fallback only applies if the server never reported its configuration;
+ * normally the real limit arrives from the API, sourced from
+ * StatusLengthValidator::MAX_CHARS (also overridden to 1000). Kept as
+ * belt-and-braces so a cold client never renders a 500-char counter.
+ *
+ * Based on: mastodon/app/javascript/mastodon/features/compose/containers/compose_form_container.js @ v4.6.3
  */
 
 import { connect } from 'react-redux';
@@ -28,6 +33,23 @@ import ComposeForm from '../components/compose_form';
 
 const urlLikeRegex = /^https?:\/\/[^\s]+\/[^\s]+$/i;
 
+const processPasteOrDrop = (transfer, e, dispatch) => {
+  if (transfer && transfer.files.length === 1) {
+    dispatch(uploadCompose(transfer.files));
+    e.preventDefault();
+  } else if (transfer && transfer.files.length === 0) {
+    const data = transfer.getData('text/plain');
+    if (!data.match(urlLikeRegex)) return;
+
+    try {
+      const url = new URL(data);
+      dispatch(pasteLinkCompose({ url }));
+    } catch {
+      return;
+    }
+  }
+};
+
 const mapStateToProps = state => ({
   text: state.getIn(['compose', 'text']),
   suggestions: state.getIn(['compose', 'suggestions']),
@@ -50,7 +72,7 @@ const mapStateToProps = state => ({
     && !state.getIn(['settings', 'dismissed_banners', PRIVATE_QUOTE_MODAL_ID]),
   isInReply: state.getIn(['compose', 'in_reply_to']) !== null,
   lang: state.getIn(['compose', 'language']),
-  maxChars: state.getIn(['server', 'server', 'configuration', 'statuses', 'max_characters'], 1000),
+  maxChars: state.getIn(['server', 'server', 'item', 'configuration', 'statuses', 'max_characters'], 1000),
 });
 
 const mapDispatchToProps = (dispatch, props) => ({
@@ -96,20 +118,11 @@ const mapDispatchToProps = (dispatch, props) => ({
   },
 
   onPaste (e) {
-    if (e.clipboardData && e.clipboardData.files.length === 1) {
-      dispatch(uploadCompose(e.clipboardData.files));
-      e.preventDefault();
-    } else if (e.clipboardData && e.clipboardData.files.length === 0) {
-      const data = e.clipboardData.getData('text/plain');
-      if (!data.match(urlLikeRegex)) return;
+    processPasteOrDrop(e.clipboardData, e, dispatch);
+  },
 
-      try {
-        const url = new URL(data);
-        dispatch(pasteLinkCompose({ url }));
-      } catch {
-        return;
-      }
-    }
+  onDrop (e) {
+    processPasteOrDrop(e.dataTransfer, e, dispatch);
   },
 
   onPickEmoji (position, data, needsSpace) {
@@ -119,5 +132,3 @@ const mapDispatchToProps = (dispatch, props) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ComposeForm);
-
-
