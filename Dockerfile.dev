@@ -1,18 +1,16 @@
-# Custom Mastodon Dockerfile with theming support and development gems
-# DIFFERENCE FROM PRODUCTION: Includes development gems in comment header
+# Custom Mastodon dev image: same overlays as the production Dockerfile,
+# plus the development gem group, and no asset precompile (Vite builds on
+# demand at runtime).
+#
+# See the production Dockerfile for notes on the overlay set and NodeSource.
+#
 # Use the upstream build stage for asset compilation
-FROM ghcr.io/mastodon/mastodon:v4.5.13 AS build
+FROM ghcr.io/mastodon/mastodon:v4.6.4 AS build
 
-# Switch to root to place theme files
+# Switch to root to place override files
 USER root
 
-# Create theming directories
-RUN mkdir -p /mastodon/app/javascript/styles \
-    && mkdir -p /mastodon/config/locales/custom
-
-# Copy theme files directly - place in main styles directory like default themes
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
+RUN mkdir -p /mastodon/config/locales/custom
 
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
@@ -26,12 +24,12 @@ COPY components/app/validators/ /mastodon/app/validators/
 # Install Node.js and enable Corepack for Yarn
 RUN apt-get update && apt-get install -y \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && corepack enable
 
 # Install Node.js dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 # DEV ONLY: Skip asset precompilation in build stage
 # NOT IN PRODUCTION: Production Dockerfile precompiles assets here
@@ -40,7 +38,7 @@ RUN yarn install --frozen-lockfile
 # and avoids Redis connection errors during build.
 
 # Final stage - copy node_modules and install development gems
-FROM ghcr.io/mastodon/mastodon:v4.5.13
+FROM ghcr.io/mastodon/mastodon:v4.6.4
 
 # DEV ONLY: Copy node_modules for Vite to use in development mode
 # NOT IN PRODUCTION: Production doesn't need node_modules at runtime
@@ -48,7 +46,7 @@ FROM ghcr.io/mastodon/mastodon:v4.5.13
 # Using --chown to set ownership during copy (much faster than recursive chown)
 COPY --from=build --chown=mastodon:mastodon /mastodon/node_modules /mastodon/node_modules
 
-# Switch to root to copy theme files and install development gems
+# Switch to root to copy override files and install development gems
 USER root
 
 # DEV ONLY: Install build tools needed for native gem extensions
@@ -62,7 +60,7 @@ RUN apt-get update && apt-get install -y \
 # DEV ONLY: Install Node.js and Yarn for Vite asset compilation in development
 # NOT IN PRODUCTION: Production uses precompiled assets from build stage
 # In development mode, Vite builds assets on-the-fly and needs Node.js/Yarn available
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && corepack enable \
     && rm -rf /var/lib/apt/lists/*
@@ -84,10 +82,6 @@ RUN bundle config set --local without '' && \
     bundle install
 
 # From here down, identical to production Dockerfile
-# Copy theme files directly
-COPY theming/styles/ /mastodon/app/javascript/styles/
-COPY theming/themes.yml /mastodon/config/themes.yml
-
 # Copy custom locale overrides
 COPY theming/locales/ /mastodon/config/locales/custom/
 

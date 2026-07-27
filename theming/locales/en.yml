@@ -1,7 +1,8 @@
+# Copied to config/locales/custom/en.yml by the Dockerfiles.
+#
+# These pair with initializers/username_login.rb, which relabels the login
+# field as "username": the stock Devise strings say "email".
 en:
-  settings:
-    theme:
-      domum: "Domum"
   devise:
     failure:
       invalid: "Invalid username or password."

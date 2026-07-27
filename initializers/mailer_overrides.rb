@@ -25,91 +25,68 @@ Rails.application.config.after_initialize do
   if clearnet_host && onion_url
     Rails.logger.info "URL rewriting enabled: #{clearnet_host} -> #{onion_url}"
     
-    # First, let's see what methods actually exist on our mailer classes
-    Rails.logger.info "Devise::Mailer methods: #{Devise::Mailer.instance_methods(false)}"
-    Rails.logger.info "UserMailer methods: #{UserMailer.instance_methods(false)}"
+    # Boot-time diagnostics for when a Mastodon upgrade moves mailer methods
+    Rails.logger.debug { "Devise::Mailer methods: #{Devise::Mailer.instance_methods(false)}" }
+    Rails.logger.debug { "UserMailer methods: #{UserMailer.instance_methods(false)}" }
     
-    # Override ActionMailer::Base to intercept all email generation
-    ActionMailer::Base.class_eval do
-      # Store the original mail method
-      alias_method :original_mail, :mail
-      
-      def mail(*args)
-        Rails.logger.info "ActionMailer::Base#mail called for #{self.class.name}"
-        
-        # Call the original mail method using alias
-        message = original_mail(*args)
-        
-        Rails.logger.info "Email generated via ActionMailer::Base#mail, now replacing clearnet URLs with onion URLs"
-        
-        # Process the message to replace URLs
-        replace_urls_in_message(message)
-        
-        message
-      end
-      
-      private
-      
-      def replace_urls_in_message(message)
-        # Get the current values each time to ensure they're fresh
-        clearnet_host = ENV['WEB_DOMAIN'] || Rails.configuration.x.web_domain
-        onion_url = ENV['ONION_URL']
-        
-        Rails.logger.info "Starting URL replacement in email"
-        Rails.logger.info "  Current clearnet_host: #{clearnet_host}"
-        Rails.logger.info "  Current onion_url: #{onion_url}"
-        Rails.logger.info "Email subject: #{message.subject}"
-        Rails.logger.info "Email has HTML part: #{message.html_part.present?}"
-        Rails.logger.info "Email has text part: #{message.text_part.present?}"
-        
-        # Replace URLs in the email body (both HTML and text parts)
-        if message.html_part
-          Rails.logger.info "Processing HTML part of email"
-          old_body = message.html_part.body.to_s
-          Rails.logger.info "HTML body contains clearnet URLs: #{old_body.include?(clearnet_host)}"
-          
-          new_body = old_body.gsub(
-            "https://#{clearnet_host}", "http://#{onion_url}"
-          ).gsub(
-            "http://#{clearnet_host}", "http://#{onion_url}"
-          )
-          
-          message.html_part.body = new_body
-          Rails.logger.info "HTML body now contains onion URLs: #{new_body.include?(onion_url)}"
+    # Override ActionMailer::Base to intercept all email generation.
+    #
+    # Guarded: this runs in after_initialize, and in RAILS_ENV=development a
+    # code reload re-runs it. Aliasing twice makes original_mail point at the
+    # override and every send recurses until SystemStackError.
+    if ActionMailer::Base.private_method_defined?(:original_mail) ||
+       ActionMailer::Base.method_defined?(:original_mail)
+      Rails.logger.debug 'Mailer overrides already installed, skipping re-alias'
+    else
+      ActionMailer::Base.class_eval do
+        # Store the original mail method
+        alias_method :original_mail, :mail
+
+        # Forward positional args, keyword args AND the block. Mastodon calls
+        # mail both as `mail(to:, subject:)` and as `mail(...) do |format|`;
+        # a bare `def mail(*args)` silently swallows both under Ruby 3+.
+        def mail(*args, **kwargs, &block)
+          Rails.logger.debug { "ActionMailer::Base#mail called for #{self.class.name}" }
+
+          # Call the original mail method using alias
+          message = original_mail(*args, **kwargs, &block)
+
+          # Process the message to replace URLs
+          replace_urls_in_message(message)
+
+          message
         end
-        
-        if message.text_part
-          Rails.logger.info "Processing text part of email"
-          old_body = message.text_part.body.to_s
-          Rails.logger.info "Text body contains clearnet URLs: #{old_body.include?(clearnet_host)}"
-          
-          new_body = old_body.gsub(
-            "https://#{clearnet_host}", "http://#{onion_url}"
-          ).gsub(
-            "http://#{clearnet_host}", "http://#{onion_url}"
-          )
-          
-          message.text_part.body = new_body
-          Rails.logger.info "Text body now contains onion URLs: #{new_body.include?(onion_url)}"
+
+        private
+
+        # Rewrite clearnet URLs to onion URLs in every part of the message.
+        #
+        # Logging here is deliberately at debug: this runs on every outgoing
+        # email and previously shipped subject lines to syslog.
+        def replace_urls_in_message(message)
+          # Get the current values each time to ensure they're fresh
+          clearnet_host = ENV['WEB_DOMAIN'] || Rails.configuration.x.web_domain
+          onion_url = ENV['ONION_URL']
+
+          return if clearnet_host.blank? || onion_url.blank?
+
+          rewrite = lambda do |body|
+            body.to_s
+                .gsub("https://#{clearnet_host}", "http://#{onion_url}")
+                .gsub("http://#{clearnet_host}", "http://#{onion_url}")
+          end
+
+          Rails.logger.debug do
+            "Rewriting #{clearnet_host} -> #{onion_url} in mail from #{self.class.name}"
+          end
+
+          # Replace URLs in the email body (both HTML and text parts)
+          message.html_part.body = rewrite.call(message.html_part.body) if message.html_part
+          message.text_part.body = rewrite.call(message.text_part.body) if message.text_part
+
+          # If no parts, replace in the main body
+          message.body = rewrite.call(message.body) if !message.html_part && !message.text_part
         end
-        
-        # If no parts, replace in the main body
-        if !message.html_part && !message.text_part
-          Rails.logger.info "Processing main body of email"
-          old_body = message.body.to_s
-          Rails.logger.info "Main body contains clearnet URLs: #{old_body.include?(clearnet_host)}"
-          
-          new_body = old_body.gsub(
-            "https://#{clearnet_host}", "http://#{onion_url}"
-          ).gsub(
-            "http://#{clearnet_host}", "http://#{onion_url}"
-          )
-          
-          message.body = new_body
-          Rails.logger.info "Main body now contains onion URLs: #{new_body.include?(onion_url)}"
-        end
-        
-        Rails.logger.info "URL replacement complete"
       end
     end
 

@@ -10,9 +10,11 @@
     %p.lead= t('auth.sign_in.preamble_html', domain: site_hostname)
     .fields-group
       - if ENV['AUTO_EMAIL_DOMAIN'].present?
-        -# Show username field when AUTO_EMAIL_DOMAIN is set
+        -# Show username field when AUTO_EMAIL_DOMAIN is set.
+        -# username_login.rb appends @AUTO_EMAIL_DOMAIN when there is no '@'.
         = f.input :email,
                   autofocus: true,
+                  required: true,
                   hint: false,
                   input_html: { name: 'user[email]', 'aria-label': t('simple_form.labels.defaults.username') },
                   label: t('simple_form.labels.defaults.username'),
@@ -20,6 +22,7 @@
       - elsif use_seamless_external_login?
         = f.input :email,
                   autofocus: true,
+                  required: true,
                   hint: false,
                   input_html: { 'aria-label': t('simple_form.labels.defaults.username_or_email') },
                   label: t('simple_form.labels.defaults.username_or_email'),
@@ -27,12 +30,14 @@
       - else
         = f.input :email,
                   autofocus: true,
+                  required: true,
                   hint: false,
                   input_html: { 'aria-label': t('simple_form.labels.defaults.email') },
                   label: t('simple_form.labels.defaults.email'),
                   wrapper: :with_label
     .fields-group
       = f.input :password,
+                required: true,
                 hint: false,
                 input_html: { 'aria-label': t('simple_form.labels.defaults.password'), autocomplete: 'current-password' },
                 label: t('simple_form.labels.defaults.password'),
@@ -43,11 +48,14 @@
 
 - if devise_mapping.omniauthable? && resource_class.omniauth_providers.any?
   .simple_form.alternative-login
-    %h4= omniauth_only? ? t('auth.log_in_with') : t('auth.or_log_in_with')
+    - if omniauth_only?
+      %h1= t('auth.log_in_with')
+    - else
+      %h2= t('auth.or_log_in_with')
 
     .actions
       - resource_class.omniauth_providers.each do |provider|
         = provider_sign_in_link(provider)
 
-.form-footer= render 'auth/shared/links'
-
+- unless within_authorization_flow?
+  .form-footer= render 'auth/shared/links'
