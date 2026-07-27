@@ -1,6 +1,6 @@
 # Theming
 
-## Status: custom theming is currently disabled (as of Mastodon 4.6.3)
+## Status: custom theming is currently disabled (as of Mastodon 4.6.4)
 
 This directory used to ship two selectable themes, `domum-dark` and
 `domum-light`, plus a shared `domum-social` palette. **They were removed

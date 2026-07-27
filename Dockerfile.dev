@@ -5,7 +5,7 @@
 # See the production Dockerfile for notes on the overlay set and NodeSource.
 #
 # Use the upstream build stage for asset compilation
-FROM ghcr.io/mastodon/mastodon:v4.6.3 AS build
+FROM ghcr.io/mastodon/mastodon:v4.6.4 AS build
 
 # Switch to root to place override files
 USER root
@@ -38,7 +38,7 @@ RUN yarn install --immutable
 # and avoids Redis connection errors during build.
 
 # Final stage - copy node_modules and install development gems
-FROM ghcr.io/mastodon/mastodon:v4.6.3
+FROM ghcr.io/mastodon/mastodon:v4.6.4
 
 # DEV ONLY: Copy node_modules for Vite to use in development mode
 # NOT IN PRODUCTION: Production doesn't need node_modules at runtime

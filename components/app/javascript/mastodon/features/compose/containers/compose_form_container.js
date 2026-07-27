@@ -9,7 +9,7 @@
  * StatusLengthValidator::MAX_CHARS (also overridden to 1000). Kept as
  * belt-and-braces so a cold client never renders a 500-char counter.
  *
- * Based on: mastodon/app/javascript/mastodon/features/compose/containers/compose_form_container.js @ v4.6.3
+ * Based on: mastodon/app/javascript/mastodon/features/compose/containers/compose_form_container.js @ v4.6.4
  */
 
 import { connect } from 'react-redux';

@@ -10,7 +10,7 @@
  * Both use plain <a> rather than <Link>: /learn is served by nginx, not by
  * React Router.
  *
- * Based on: mastodon/app/javascript/mastodon/features/ui/components/link_footer.tsx @ v4.6.3
+ * Based on: mastodon/app/javascript/mastodon/features/ui/components/link_footer.tsx @ v4.6.4
  * Upstream restructured this in 4.6 -- <p> plus DividingCircle became two
  * <section>s of <ul>/<li> using CSS modules, and the `multiColumn` prop became
  * `context`. DividingCircle no longer exists; do not reintroduce it.
